@@ -51,7 +51,31 @@ namespace cohesion_challenge_cs.Tests
         [Test]
         public void VerifyPageNavigationInDataSets()
         {
-            Assert.Pass();
+            // ARRANGE
+            Dictionary<string, string> queryParamsOne = new Dictionary<string, string>();
+            queryParamsOne.Add("station_name", "63rd Street Weather Station");
+            queryParamsOne.Add("$limit", "10");
+            queryParamsOne.Add("$offset", "0"); // Starting at element 1 of array
+            queryParamsOne.Add("$order", "measurement_id");
+
+            Dictionary<string, string> queryParamsTwo = new Dictionary<string, string>();
+            queryParamsTwo.Add("station_name", "63rd Street Weather Station");
+            queryParamsTwo.Add("$limit", "10");
+            queryParamsTwo.Add("$offset", "10"); // Starting at element 11 of array
+            queryParamsTwo.Add("$order", "measurement_id");
+
+            // ACT
+            IRestResponse responseOne = ApiHelper.Get(apiUri, queryParamsOne, userToken);
+            IRestResponse responseTwo = ApiHelper.Get(apiUri, queryParamsTwo, userToken);
+
+            // ASSERT
+            // I need to make two requests, one for each page.
+            // Then, compare lists to verify that all element of the second page isn't in first page.
+            var measurementsPageOne = new JsonDeserializer().Deserialize<List<Measurement>>(responseOne);
+
+            var measurementsPageTwo = new JsonDeserializer().Deserialize<List<Measurement>>(responseTwo);
+
+            Assert.That(measurementsPageOne.Intersect(measurementsPageTwo).LongCount, Is.EqualTo(0));
         }
 
         /***
