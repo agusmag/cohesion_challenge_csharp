@@ -1,9 +1,19 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using cohesion_challenge_cs.Models;
+using cohesion_challenge_cs.src.helpers;
+using NUnit.Framework;
+using RestSharp;
+using RestSharp.Serialization.Json;
 
 namespace cohesion_challenge_cs.Tests
 {
     public class ChicagoWeatherTest
     {
+        private readonly string apiUri = "https://data.cityofchicago.org/resource/k7hf-8y75.json";
+        private readonly string userToken = "";
+        
         [SetUp]
         public void Setup()
         {
@@ -18,7 +28,17 @@ namespace cohesion_challenge_cs.Tests
         [Test]
         public void ListAllMeasurementsOnOakStreet()
         {
-            Assert.Pass();
+            // ARRANGE
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add("station_name", "Oak Street Weather Station");
+
+            // ACT
+            IRestResponse response = ApiHelper.Get(apiUri, queryParams, userToken);
+            var measurements = new JsonDeserializer().Deserialize<List<Measurement>>(response);
+
+            // ASSERT
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(measurements.All(x => x.station_name == "Oak Street Weather Station"), Is.True);
         }
 
         /***

@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using RestSharp;
 
 namespace cohesion_challenge_cs.src.helpers
 {
-    public class ApiHelper
+    public abstract class ApiHelper
     {
         private static RestClient restClient { get; set; }
         private static IRestResponse response { get; set; }
         private static RestRequest restRequest { get; set; }
 
-        public IRestResponse Get(string endpoint, Dictionary<string, string> queryParams, string token)
+        public static IRestResponse Get(string endpoint, Dictionary<string, string> queryParams, string token)
         {
             restClient = new RestClient(endpoint);
             restRequest = new RestRequest();
@@ -27,7 +28,7 @@ namespace cohesion_challenge_cs.src.helpers
             }
 
             response = restClient.Execute(restRequest);
-            Console.WriteLine(JsonConvert.SerializeObject(response.Content, Formatting.Indented));
+            Trace.WriteLine(JsonConvert.SerializeObject(response.Content));
 
             return response;
         }
