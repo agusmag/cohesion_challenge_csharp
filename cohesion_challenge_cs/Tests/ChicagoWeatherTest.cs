@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using cohesion_challenge_cs.Models;
 using cohesion_challenge_cs.src.helpers;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using RestSharp;
 using RestSharp.Serialization.Json;
@@ -87,7 +88,20 @@ namespace cohesion_challenge_cs.Tests
         [Test]
         public void VerifyErrorMessageUsingMalformedQuery()
         {
-            Assert.Pass();
+            // ARRANGE
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add("station_name", "63rd Street Weather Station");
+            queryParams.Add("$where", "battery_life < full");
+
+            // ACT
+            IRestResponse response = ApiHelper.Get(apiUri, queryParams, userToken);
+            dynamic result = JsonConvert.DeserializeObject(response.Content);
+
+            // ASSERT
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.code.ToObject<string>(), Is.EqualTo("query.compiler.malformed"));
+            Assert.That(result.error.ToObject<bool>(), Is.EqualTo(true));
+            Assert.That(result.message.ToObject<string>().Contains("COULD NOT PARSE SOQL QUERY", System.StringComparison.OrdinalIgnoreCase), Is.True);
         }
     }
 }
